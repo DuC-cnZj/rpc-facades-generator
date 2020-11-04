@@ -142,7 +142,12 @@ DOC;
      */
     public function {{method}}(\$data = [])
     {
-        \$request = new {{argument}}(\$data);
+        \$request = new {{argument}}();
+        foreach(\$data as \$key => \$value) {
+            if (method_exists(\$request, \$method = 'set' . ucfirst(\$key))) {
+                \$request->\$method(\$value);
+            }
+        }
         [\$data, \$response] = \$this->client->{{method}}(\$request)->wait();
         if (\$response->code == \Grpc\CALL_OK) {
             return \$data;
