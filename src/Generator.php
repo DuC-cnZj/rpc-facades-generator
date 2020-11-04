@@ -91,6 +91,9 @@ DOC;
             array_shift($a);
             if (! file_exists($path = $this->getFacadeDir(implode('/', $a)))) {
                 mkdir($path, 0777, true);
+            } else {
+                rmdir($path);
+                mkdir($path, 0777, true);
             }
             file_put_contents($path . '/' . $data['targetFile'], $file);
         }
@@ -132,6 +135,9 @@ DOC;
             array_pop($a);
             array_shift($a);
             if (! file_exists($path = $this->getSvcDir(implode('/', $a)))) {
+                mkdir($path, 0777, true);
+            } else {
+                rmdir($path);
                 mkdir($path, 0777, true);
             }
 
