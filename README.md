@@ -5,7 +5,7 @@
 ## Installing
 
 ```shell
-$ composer require duc_cnzj/rpc-facades-generator
+$ composer require duc_cnzj/rpc-facades-generator --dev
 ```
 
 ## Usage
