@@ -24,6 +24,7 @@ class Generator
 
     public function getGRPCData()
     {
+        $this->fileManager->delete($this->fileManager->allFiles('Facades', 'Services'));
         $this->data = collect($this->fileManager->allFiles())
             ->filter(fn ($name) => Str::contains($name, 'Client'))
             ->reject(fn ($name) => Str::contains($name, ['Facades', 'Services']))
