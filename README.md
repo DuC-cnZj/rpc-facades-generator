@@ -5,12 +5,13 @@
 ## Installing
 
 ```shell
-$ composer require duccnzj//rpc-facades-generator -vvv
+$ composer global require duc_cnzj/rpc-facades-generator
 ```
 
 ## Usage
-
-TODO
+```shell
+rpc-generator your-grpc-file-path
+```
 
 ## License
 
