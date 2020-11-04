@@ -10,17 +10,17 @@ use Illuminate\Contracts\Filesystem\Filesystem;
 class Generator
 {
     /**
-     * string
+     * @var string
      */
     private $rootPath;
 
     /**
-     * array
+     * @var array
      */
     private $data = [];
 
     /**
-     * Filesystem
+     * @var Filesystem
      */
     public $fileManager;
 
