@@ -79,14 +79,14 @@ class Generator
         return $this;
     }
 
-    public function replaceFacadeStub($class, $svcClass, $methods, $facadeNamespace, $return)
+    public function replaceFacadeStub($class, $svcClass, $methods, $facadeNamespace)
     {
         $m = <<<DOC
- * @method static {$return} {{method}}(array \$data)\n
+ * @method static {{return}} {{method}}(array \$data)\n
 DOC;
         $doc = '';
         foreach ($methods as $method) {
-            $doc .= str_replace('{{method}}', $method['method'], $m);
+            $doc .= str_replace(['{{method}}', '{{return}}'], [$method['method'], $method['return']], $m);
         }
 
         return str_replace(['{{namespace}}', '{{class}}', '{{svcClass}}', '{{methods}}'], [$facadeNamespace, $class, $svcClass, rtrim($doc)], file_get_contents(__DIR__ . '/stubs/facade.stub'));
@@ -104,7 +104,7 @@ DOC;
             $facadeNamespace = implode('\\', array_merge([$topNs, 'Facades'], $tmp));
             $svcNamespace = implode('\\', array_merge([$topNs, 'Services'], $tmp));
             $svcClass = '\\' . $svcNamespace . '\\' . $data['shortClassName'] . 'Service';
-            $file = $this->replaceFacadeStub($data['shortClassName'], $svcClass, $data['methods'], $facadeNamespace, $data['return']);
+            $file = $this->replaceFacadeStub($data['shortClassName'], $svcClass, $data['methods'], $facadeNamespace);
             $a = explode('\\', $data['class']);
             array_pop($a);
             array_shift($a);
