@@ -202,6 +202,7 @@ REGISTER;
     {
         $this->generateFacade();
         $this->generateSvc();
+        $this->generateProvider();
     }
 
     public function toArray()
