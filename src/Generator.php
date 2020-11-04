@@ -174,9 +174,14 @@ REGISTER;
 
     private function validatePath(string $rootPath)
     {
-        if (! $rootPath) {
-            throw new \Exception('error path');
+        // todo 通过 composer.json 获取 rootPath
+        $composerFile = rtrim($rootPath, DIRECTORY_SEPARATOR). DIRECTORY_SEPARATOR . 'composer.json';
+        if (file_exists($composerFile)) {
+            throw new \Exception('path 下必须有 composer.json');
         }
+        preg_match("/(src.*)[^\"]/", file_get_contents($composerFile), $match);
+        $this->rootPath = $rootPath . DIRECTORY_SEPARATOR . $match[0];
+        dump('root path: ' . $this->rootPath);
     }
 
     /**
