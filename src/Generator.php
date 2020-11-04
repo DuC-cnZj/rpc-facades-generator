@@ -53,8 +53,17 @@ class Generator
                     if (! $method->isConstructor() && $class->getName() == $method->class) {
                         $data = collect($fileArray)->slice($method->getStartLine(), $method->getEndLine() - $method->getStartLine())->implode('');
                         preg_match("/\['(.*?)', 'decode'\]/", $data, $match);
-
+                        $params = '';
+                        foreach ($method->getParameters()[0]->getClass()->getMethods() as $m) {
+                            if (Str::startsWith($m->getName(), 'set')) {
+                                preg_match('/@param\s+(.*?)\s+/', $m->getDocComment(), $matches);
+                                $type = $matches[1];
+                                $name = Str::lower(Str::after($m->getName(), 'set'));
+                                $params .= "         * @param {$type} {$name}\n";
+                            }
+                        }
                         $methods[] = [
+                            'params'                 => $params,
                             'method'                 => $method->getName(),
                             'return'                 => $match[1],
                             'argument'               => $method->getParameters()[0]->getClass()->getName(),
@@ -123,6 +132,10 @@ DOC;
     {
         foreach ($this->data as $data) {
             $m = <<<Methods
+        /**
+{{params}}
+         * @return {{return}}
+         */
         public function {{method}}(\$data = [])
         {
             \$request = new {{argument}}(\$data);
@@ -137,7 +150,7 @@ Methods;
 
             $methods = '';
             foreach ($data['methods'] as $method) {
-                $methods .= str_replace(['{{method}}', '{{argument}}'], [$method['method'], $method['argumentShortClassName']], $m);
+                $methods .= str_replace(['{{method}}', '{{argument}}', '{{return}}', '{{params}}'], [$method['method'], $method['argumentShortClassName'], $method['return'], $method['params']], $m);
             }
 
             $useClassList = collect($data['methods'])->pluck('argument')->unique()->merge($data['class'])->map(function ($class) {return "use $class;\n";})->implode('');
@@ -190,7 +203,6 @@ REGISTER;
 
     private function validatePath(string $rootPath)
     {
-        // todo 通过 composer.json 获取 rootPath
         $composerFile = rtrim($rootPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'composer.json';
         if (! file_exists($composerFile)) {
             throw new \Exception('path 下必须有 composer.json');
