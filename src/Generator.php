@@ -133,7 +133,7 @@ DOC;
 
             throw new \Exception(\$response->details, \$response->code);
         }\n\n
-    Methods;
+Methods;
 
             $methods = '';
             foreach ($data['methods'] as $method) {
