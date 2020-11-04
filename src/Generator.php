@@ -182,6 +182,7 @@ Methods;
         $namespace = Str::of(collect($this->data)->pluck('class')->first())->explode('\\')->first();
         $useClassList = collect($this->data)->pluck('class')->map(function ($class) {return "use $class;\n";})->implode('');
         $registerDef = <<<REGISTER
+        \$this->app->singleton({{rpcClass}}::class);
         \$this->app->when({{rpcClass}}::class)
             ->needs('\$hostname')
             ->give(env("{{rpcHost}}"));
