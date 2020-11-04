@@ -9,11 +9,20 @@ use Illuminate\Contracts\Filesystem\Filesystem;
 
 class Generator
 {
-    private string $rootPath;
+    /**
+     * string
+     */
+    private $rootPath;
 
-    private array $data = [];
+    /**
+     * array
+     */
+    private $data = [];
 
-    public Filesystem $fileManager;
+    /**
+     * Filesystem
+     */
+    public $fileManager;
 
     public function __construct(string $rootPath)
     {
