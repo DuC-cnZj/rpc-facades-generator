@@ -144,7 +144,8 @@ DOC;
     {
         \$request = new {{argument}}();
         foreach(\$data as \$key => \$value) {
-            if (method_exists(\$request, \$method = 'set' . ucfirst(\$key))) {
+            \$method = str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', \$key)));
+            if (method_exists(\$request, \$method)) {
                 \$request->\$method(\$value);
             }
         }
