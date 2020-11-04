@@ -59,7 +59,7 @@ class Generator
                                 preg_match('/@param\s+(.*?)\s+/', $m->getDocComment(), $matches);
                                 $type = $matches[1];
                                 $name = Str::lower(Str::after($m->getName(), 'set'));
-                                $params .= "     *     @type {$type} {$name}\n";
+                                $params .= "     *     @type {$type} \${$name}\n";
                             }
                         }
                         $methods[] = [
