@@ -180,7 +180,7 @@ REGISTER;
             throw new \Exception('path 下必须有 composer.json');
         }
         preg_match("/(src.*)[^\"]/", file_get_contents($composerFile), $match);
-        $this->rootPath = $rootPath . DIRECTORY_SEPARATOR . $match[1];
+        $this->rootPath = $rootPath . DIRECTORY_SEPARATOR . rtrim($match[1], '\"');
         dump('root path: ' . $this->rootPath);
     }
 
