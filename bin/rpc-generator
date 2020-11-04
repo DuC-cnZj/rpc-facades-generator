@@ -12,17 +12,7 @@ if (file_exists(dirname(dirname(__FILE__)).'/vendor/autoload.php')) {
 }
 
 if (count($argv) <= 1) {
-
-    throw new Exception("请输入rpc dir 的绝对路径, dir 必须和 composer.json 中定义的一致\n".<<<TIP
-例如：/src/Stock
-"autoload": {
-    "psr-4": {
-        "Stock\\": "src/Stock"
-    }
-}
-\n
-TIP
-);
+    throw new Exception("请输入composer.json 所在目录");
 }
 
 $g = new Generator($argv[1]);
