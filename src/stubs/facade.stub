@@ -1,0 +1,21 @@
+<?php
+
+
+namespace {{namespace}};
+
+
+use Illuminate\Support\Facades\Facade;
+
+/**
+ *
+{{methods}}
+ *
+ * Class {{class}}
+ */
+class {{class}} extends Facade
+{
+    protected static function getFacadeAccessor()
+    {
+        return self::$app->make({{svcClass}}::class);
+    }
+}

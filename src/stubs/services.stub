@@ -1,0 +1,20 @@
+<?php
+
+namespace {{namespace}};
+
+{{useClassList}}
+
+class {{class}}Service
+{
+    /**
+     * @var {{class}}
+     */
+    protected $client;
+
+    public function __construct()
+    {
+        $this->client = app({{class}}::class);
+    }
+
+{{methods}}
+}

@@ -1,0 +1,25 @@
+{
+    "name": "duc_cnzj/rpc-facades-generator",
+    "description": "Package description here.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "duc",
+            "email": "1025434218@qq.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+          "DucCnzj\\RpcFacadesGenerator\\": "src/"
+        }
+      },
+    "require": {
+        "symfony/var-dumper": "^5.1",
+        "illuminate/support": "^8.13",
+        "illuminate/filesystem": "^8.13",
+        "league/flysystem": "^1.1"
+    },
+    "bin": [
+        "bin/rpc-generator"
+    ]
+}

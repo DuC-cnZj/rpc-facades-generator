@@ -1,0 +1,13 @@
+<?php
+
+namespace {{namespace}};
+
+{{useClassList}}
+
+class ServiceProvider extends \Illuminate\Support\ServiceProvider
+{
+    public function register()
+    {
+{{registers}}
+    }
+}
