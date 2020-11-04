@@ -51,7 +51,7 @@ option go_package="duc/dm";
 option php_metadata_namespace = "Duc\\DM";
 
 message DM {
-	int64 ID = 1;
+    int64 ID = 1;
     int32 Type = 2;
     string Content = 3;
 }
