@@ -1,4 +1,4 @@
-# /rpc-facades-generator
+# rpc-facades-generator
 
 
 
