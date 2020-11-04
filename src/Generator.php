@@ -59,7 +59,7 @@ class Generator
                                 preg_match('/@param\s+(.*?)\s+/', $m->getDocComment(), $matches);
                                 $type = $matches[1];
                                 $name = Str::lower(Str::after($m->getName(), 'set'));
-                                $params .= "         * @param {$type} {$name}\n";
+                                $params .= "     * @param {$type} {$name}\n";
                             }
                         }
                         $methods[] = [
@@ -132,20 +132,20 @@ DOC;
     {
         foreach ($this->data as $data) {
             $m = <<<Methods
-        /**
+    /**
 {{params}}
-         * @return {{return}}
-         */
-        public function {{method}}(\$data = [])
-        {
-            \$request = new {{argument}}(\$data);
-            [\$data, \$response] = \$this->client->{{method}}(\$request)->wait();
-            if (\$response->code == \Grpc\CALL_OK) {
-                return \$data;
-            }
+     * @return {{return}}
+     */
+    public function {{method}}(\$data = [])
+    {
+        \$request = new {{argument}}(\$data);
+        [\$data, \$response] = \$this->client->{{method}}(\$request)->wait();
+        if (\$response->code == \Grpc\CALL_OK) {
+            return \$data;
+        }
 
-            throw new \Exception(\$response->details, \$response->code);
-        }\n\n
+        throw new \Exception(\$response->details, \$response->code);
+    }\n\n
 Methods;
 
             $methods = '';
