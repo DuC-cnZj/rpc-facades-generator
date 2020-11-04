@@ -133,7 +133,11 @@ DOC;
         foreach ($this->data as $data) {
             $m = <<<Methods
     /**
-{{params}}
+     * @param array $data {
+     *     Optional. Data for populating the Message object.
+     *
+    {{params}}
+     * }
      * @return {{return}}
      */
     public function {{method}}(\$data = [])
