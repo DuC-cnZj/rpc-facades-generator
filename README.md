@@ -41,6 +41,31 @@ rpc-generator your-grpc-file-path
 }
 ```
 
+## proto demo
+```proto
+syntax="proto3";
+
+// {package, php_metadata_namespace} required;
+package duc.dm;
+option go_package="duc/dm";
+option php_metadata_namespace = "Duc\\DM";
+
+message DM {
+	int64 ID = 1;
+    int32 Type = 2;
+    string Content = 3;
+}
+
+message Response {
+    int32 code  =1;
+    string data = 2; 
+}
+
+service DMController {
+    rpc Create (DM) returns (Response);
+}
+```
+
 ## License
 
 MIT
