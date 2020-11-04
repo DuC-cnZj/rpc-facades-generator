@@ -47,10 +47,16 @@ class Generator
                 $fullClassName = "$namespace\\$class";
                 $class = new \ReflectionClass($fullClassName);
                 $methods = [];
+                $fileArray = explode("\n", file_get_contents($class->getFileName()));
+
                 foreach ($class->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                     if (! $method->isConstructor() && $class->getName() == $method->class) {
+                        $data = collect($fileArray)->slice($method->getStartLine(), $method->getEndLine() - $method->getStartLine())->implode('');
+                        preg_match("/\['(.*?)', 'decode'\]/", $data, $match);
+
                         $methods[] = [
                             'method'                 => $method->getName(),
+                            'return'                 => $match[1],
                             'argument'               => $method->getParameters()[0]->getClass()->getName(),
                             'argumentShortClassName' => $method->getParameters()[0]->getClass()->getShortName(),
                         ];
@@ -73,10 +79,10 @@ class Generator
         return $this;
     }
 
-    public function replaceFacadeStub($class, $svcClass, $methods, $facadeNamespace)
+    public function replaceFacadeStub($class, $svcClass, $methods, $facadeNamespace, $return)
     {
         $m = <<<DOC
- * @method static mixed {{method}}(array \$data)\n
+ * @method static {$return} {{method}}(array \$data)\n
 DOC;
         $doc = '';
         foreach ($methods as $method) {
@@ -98,7 +104,7 @@ DOC;
             $facadeNamespace = implode('\\', array_merge([$topNs, 'Facades'], $tmp));
             $svcNamespace = implode('\\', array_merge([$topNs, 'Services'], $tmp));
             $svcClass = '\\' . $svcNamespace . '\\' . $data['shortClassName'] . 'Service';
-            $file = $this->replaceFacadeStub($data['shortClassName'], $svcClass, $data['methods'], $facadeNamespace);
+            $file = $this->replaceFacadeStub($data['shortClassName'], $svcClass, $data['methods'], $facadeNamespace, $data['return']);
             $a = explode('\\', $data['class']);
             array_pop($a);
             array_shift($a);
@@ -124,7 +130,7 @@ DOC;
             if (\$response->code == \Grpc\CALL_OK) {
                 return \$data;
             }
-    
+
             throw new \Exception(\$response->details, \$response->code);
         }\n\n
     Methods;
@@ -171,7 +177,7 @@ REGISTER;
 
         $registers = collect($this->data)->map(function ($item) use ($registerDef) {
             $rpcClass = $item['shortClassName'];
-            $rpcHost = Str::upper(Str::of($item['class'])->explode('\\')->first()). "_HOST";
+            $rpcHost = Str::upper(Str::of($item['class'])->explode('\\')->first()) . '_HOST';
 
             return str_replace(['{{rpcClass}}', '{{rpcHost}}'], [$rpcClass, $rpcHost], $registerDef);
         })->implode("\n");
@@ -185,11 +191,11 @@ REGISTER;
     private function validatePath(string $rootPath)
     {
         // todo 通过 composer.json 获取 rootPath
-        $composerFile = rtrim($rootPath, DIRECTORY_SEPARATOR). DIRECTORY_SEPARATOR . 'composer.json';
-        if (!file_exists($composerFile)) {
+        $composerFile = rtrim($rootPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'composer.json';
+        if (! file_exists($composerFile)) {
             throw new \Exception('path 下必须有 composer.json');
         }
-        preg_match("/(src.*)[^\"]/", file_get_contents($composerFile), $match);
+        preg_match('/(src.*)[^"]/', file_get_contents($composerFile), $match);
         $this->rootPath = $rootPath . DIRECTORY_SEPARATOR . rtrim($match[1], '\"');
         dump('root path: ' . $this->rootPath);
     }
