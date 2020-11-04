@@ -26,8 +26,8 @@ class Generator
     {
         $this->fileManager->delete($this->fileManager->allFiles('Facades', 'Services'));
         $this->data = collect($this->fileManager->allFiles())
-            ->filter(fn ($name) => Str::contains($name, 'Client'))
-            ->reject(fn ($name) => Str::contains($name, ['Facades', 'Services']))
+            ->filter(function ($name) {return Str::contains($name, 'Client');})
+            ->reject(function ($name) {return Str::contains($name, ['Facades', 'Services']);})
             ->values()
             ->map(function ($name) {
                 $content = file_get_contents($this->rootPath . '/' . $name);
@@ -125,7 +125,7 @@ DOC;
                 $methods .= str_replace(['{{method}}', '{{argument}}'], [$method['method'], $method['argumentShortClassName']], $m);
             }
 
-            $useClassList = collect($data['methods'])->pluck('argument')->unique()->merge($data['class'])->map(fn ($class) => "use $class;\n")->implode('');
+            $useClassList = collect($data['methods'])->pluck('argument')->unique()->merge($data['class'])->map(function ($class) {return "use $class;\n";})->implode('');
 
             $tmp = explode('\\', $data['class']);
             array_pop($tmp);
@@ -148,7 +148,7 @@ DOC;
     public function generateProvider()
     {
         $namespace = Str::of(collect($this->data)->pluck('class')->first())->explode('\\')->first();
-        $useClassList = collect($this->data)->pluck('class')->map(fn ($class) => "use $class;\n")->implode('');
+        $useClassList = collect($this->data)->pluck('class')->map(function ($class) {return "use $class;\n";})->implode('');
         $registerDef = <<<REGISTER
         \$this->app->when({{rpcClass}}::class)
             ->needs('\$hostname')
