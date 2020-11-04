@@ -5,6 +5,7 @@ namespace DucCnzj\RpcFacadesGenerator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Filesystem\FilesystemManager;
+use Illuminate\Contracts\Filesystem\Filesystem;
 
 class Generator
 {
@@ -12,16 +13,18 @@ class Generator
 
     private array $data = [];
 
+    public Filesystem $fileManager;
+
     public function __construct(string $rootPath)
     {
         $this->rootPath = $rootPath;
         $this->validatePath($rootPath);
+        $this->fileManager = (new FilesystemManager(null))->createLocalDriver(['root' => $this->rootPath]);
     }
 
     public function getGRPCData()
     {
-        $m = (new FilesystemManager(null))->createLocalDriver(['root' => $this->rootPath]);
-        $this->data = collect($m->allFiles())
+        $this->data = collect($this->fileManager->allFiles())
             ->filter(fn ($name) => Str::contains($name, 'Client'))
             ->reject(fn ($name) => Str::contains($name, ['Facades', 'Services']))
             ->values()
@@ -91,9 +94,6 @@ DOC;
             array_shift($a);
             if (! file_exists($path = $this->getFacadeDir(implode('/', $a)))) {
                 mkdir($path, 0777, true);
-            } else {
-                rmdir($path);
-                mkdir($path, 0777, true);
             }
             file_put_contents($path . '/' . $data['targetFile'], $file);
         }
@@ -135,9 +135,6 @@ DOC;
             array_pop($a);
             array_shift($a);
             if (! file_exists($path = $this->getSvcDir(implode('/', $a)))) {
-                mkdir($path, 0777, true);
-            } else {
-                rmdir($path);
                 mkdir($path, 0777, true);
             }
 
@@ -216,6 +213,3 @@ REGISTER;
         return collect($this->data)->toArray();
     }
 }
-
-// $cg = new ClassGenerator(__DIR__ . '/src/Stock');
-// dd($cg->getGRPCData()->generateProvider());
