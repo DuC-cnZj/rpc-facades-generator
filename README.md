@@ -10,7 +10,7 @@ $ composer require duc_cnzj/rpc-facades-generator
 
 ## Usage
 ```shell
-rpc-generator your-grpc-file-path
+./vendor/rpc-generator your-grpc-composer.json-dir
 ```
 
 ## `composer.json` demo
