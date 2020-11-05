@@ -143,9 +143,9 @@ DOC;
      */
     public function {{method}}(\$data = [], \$asArray = true)
     {
-        \$req = \$data;
+        \$request = \$data;
         if (is_array(\$data)) {
-            \$req = new {{argument}}();
+            \$request = new {{argument}}();
             foreach(\$data as \$key => \$value) {
                 \$method = 'set' . str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', \$key)));
                 if (method_exists(\$request, \$method)) {
@@ -154,7 +154,7 @@ DOC;
             }
         }
 
-        [\$data, \$response] = \$this->client->{{method}}(\$req)->wait();
+        [\$data, \$response] = \$this->client->{{method}}(\$request)->wait();
         if (\$response->code == \Grpc\CALL_OK) {
             if (\$asArray) {
                 return json_decode(\$data->serializeToJsonString(), true);
