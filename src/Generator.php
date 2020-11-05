@@ -91,7 +91,7 @@ class Generator
     public function replaceFacadeStub($class, $svcClass, $methods, $facadeNamespace)
     {
         $m = <<<DOC
- * @method static {{return}} {{method}}(array \$data)\n
+ * @method static {{return}} {{method}}(array \$data = [], bool \$asArray = true)\n
 DOC;
         $doc = '';
         foreach ($methods as $method) {
@@ -138,9 +138,10 @@ DOC;
      *
 {{params}}
      * }
-     * @return {{return}}
+     * @param bool \$asArray
+     * @return {{return}}|array
      */
-    public function {{method}}(\$data = [])
+    public function {{method}}(\$data = [], \$asArray = true)
     {
         \$request = new {{argument}}();
         foreach(\$data as \$key => \$value) {
@@ -151,6 +152,10 @@ DOC;
         }
         [\$data, \$response] = \$this->client->{{method}}(\$request)->wait();
         if (\$response->code == \Grpc\CALL_OK) {
+            if (\$asArray) {
+                return json_decode(\$data->serializeToJsonString(), true);
+            }
+
             return \$data;
         }
 
