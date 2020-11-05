@@ -91,7 +91,7 @@ class Generator
     public function replaceFacadeStub($class, $svcClass, $methods, $facadeNamespace)
     {
         $m = <<<DOC
- * @method static {{return}}|array {{method}}(array \$data = [], bool \$asArray = true)\n
+ * @method static {{return}}|array {{method}}(\$data = [], bool \$asArray = true)\n
 DOC;
         $doc = '';
         foreach ($methods as $method) {
@@ -133,7 +133,7 @@ DOC;
         foreach ($this->data as $data) {
             $m = <<<Methods
     /**
-     * @param array \$data {
+     * @param array|{{argument}} \$data {
      *     Optional. Data for populating the Message object.
      *
 {{params}}
@@ -143,14 +143,18 @@ DOC;
      */
     public function {{method}}(\$data = [], \$asArray = true)
     {
-        \$request = new {{argument}}();
-        foreach(\$data as \$key => \$value) {
-            \$method = 'set' . str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', \$key)));
-            if (method_exists(\$request, \$method)) {
-                \$request->\$method(\$value);
+        \$req = \$data;
+        if (is_array(\$data)) {
+            \$req = new {{argument}}();
+            foreach(\$data as \$key => \$value) {
+                \$method = 'set' . str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', \$key)));
+                if (method_exists(\$request, \$method)) {
+                    \$request->\$method(\$value);
+                }
             }
         }
-        [\$data, \$response] = \$this->client->{{method}}(\$request)->wait();
+
+        [\$data, \$response] = \$this->client->{{method}}(\$req)->wait();
         if (\$response->code == \Grpc\CALL_OK) {
             if (\$asArray) {
                 return json_decode(\$data->serializeToJsonString(), true);
