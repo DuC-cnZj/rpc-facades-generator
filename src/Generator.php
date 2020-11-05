@@ -164,7 +164,7 @@ DOC;
             return \$data;
         }
 
-        throw new \Exception("{{svc}} client: " . \$response->details, \$response->code);
+        throw new \Exception("{{svc}} rpc client error: " . \$response->details, \$response->code);
     }\n\n
 Methods;
 
