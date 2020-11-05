@@ -131,6 +131,7 @@ DOC;
     public function generateSvc(): void
     {
         foreach ($this->data as $data) {
+            $topNs = explode('\\', $data['class'])[0];
             $m = <<<Methods
     /**
      * @param array|{{argument}} \$data {
@@ -163,13 +164,13 @@ DOC;
             return \$data;
         }
 
-        throw new \Exception(\$response->details, \$response->code);
+        throw new \Exception("{{svc}} client: " . \$response->details, \$response->code);
     }\n\n
 Methods;
 
             $methods = '';
             foreach ($data['methods'] as $method) {
-                $methods .= str_replace(['{{method}}', '{{argument}}', '{{return}}', '{{params}}'], [$method['method'], $method['argumentShortClassName'], $method['return'], $method['params']], $m);
+                $methods .= str_replace(['{{method}}', '{{argument}}', '{{return}}', '{{params}}', '{{svc}}'], [$method['method'], $method['argumentShortClassName'], $method['return'], $method['params'], $topNs], $m);
             }
 
             $useClassList = collect($data['methods'])->pluck('argument')->unique()->merge($data['class'])->map(function ($class) {return "use $class;\n";})->implode('');
