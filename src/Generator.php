@@ -91,7 +91,7 @@ class Generator
     public function replaceFacadeStub($class, $svcClass, $methods, $facadeNamespace)
     {
         $m = <<<DOC
- * @method static {{return}} {{method}}(array \$data = [], bool \$asArray = true)\n
+ * @method static {{return}}|array {{method}}(array \$data = [], bool \$asArray = true)\n
 DOC;
         $doc = '';
         foreach ($methods as $method) {
