@@ -14,6 +14,6 @@ class {{class}} extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return self::$app->make({{svcClass}}::class);
+        return {{svcClass}}::class;
     }
 }

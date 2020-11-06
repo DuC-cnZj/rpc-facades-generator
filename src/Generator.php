@@ -201,7 +201,7 @@ Methods;
         \$this->app->singleton({{rpcClass}}::class);
         \$this->app->when({{rpcClass}}::class)
             ->needs('\$hostname')
-            ->give(env("{{rpcHost}}"));
+            ->give(env("{{rpcHost}}", ""));
         \$this->app->when({{rpcClass}}::class)
             ->needs('\$opts')
             ->give([
