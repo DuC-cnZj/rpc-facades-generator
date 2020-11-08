@@ -275,11 +275,18 @@ REGISTER;
 
     public function addArrayAbilityForMethod(\ReflectionClass $class)
     {
-        $data = file_get_contents($class->getFileName());
-        preg_match("/GPBUtil::checkRepeatedField\((.*?)\);\n/", $data, $m);
+        $data = $this->replaceGRPCFileMap[$class->getFileName()] ?? file_get_contents($class->getFileName());
+        preg_match_all("/GPBUtil::checkRepeatedField\((.*?)\);\n/", $data, $m);
         if (count($m) < 2) {
             return;
         }
+        foreach (collect($m[0])->zip($m[1])->toArray() as $ms) {
+            $this->deal($ms, $class, $data);
+        }
+    }
+
+    public function deal($m, $class, $data)
+    {
         $target = trim(Arr::last(explode(',', rtrim($m[1], "::class"))));
         $code = <<<CODE
         \$tmp = [];
@@ -298,6 +305,9 @@ REGISTER;
 CODE;
 
         $newCode = str_replace(['{{class}}'], [$target], $code);
+        if ($this->replaceGRPCFileMap[$class->getFileName()] ?? false) {
+            $data = $this->replaceGRPCFileMap[$class->getFileName()];
+        }
         $this->replaceGRPCFileMap[$class->getFileName()] = str_replace($m[0], $m[0].$newCode, $data);
 
         $subClass = new \ReflectionClass($target);
