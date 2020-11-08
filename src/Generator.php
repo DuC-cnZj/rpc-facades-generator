@@ -24,6 +24,8 @@ class Generator
      */
     public $fileManager;
 
+    public $replaceGRPCFileMap = [];
+
     public function __construct(string $rootPath)
     {
         $this->rootPath = $rootPath;
@@ -62,6 +64,9 @@ class Generator
                                 $params .= "     *     @type {$type} \${$name}\n";
                             }
                         }
+
+                        $this->addArrayAbilityForMethod($method->getParameters()[0]->getClass());
+
                         $methods[] = [
                             'params'                 => $params,
                             'method'                 => $method->getName(),
@@ -260,10 +265,43 @@ REGISTER;
         $this->generateFacade();
         $this->generateSvc();
         $this->generateProvider();
+        $this->replaceGRPCFile();
     }
 
     public function toArray()
     {
         return collect($this->data)->toArray();
+    }
+
+    public function addArrayAbilityForMethod(\ReflectionClass $class)
+    {
+        $data = file_get_contents($class->getFileName());
+        preg_match("/GPBUtil::checkRepeatedField\((.*?)\);\n/", $data, $m);
+        if (count($m) < 2) {
+            return;
+        }
+        $target = trim(Arr::last(explode(',', $m[1])));
+        $code = <<<CODE
+        \$tmp = \$arr;
+        if (is_array(\$tmp)) {
+            foreach(\$arr as \$item) {
+                \$tmp = new {{class}}(\$item);
+            }
+            \$arr = \$tmp;
+        }\n
+CODE;
+
+        $newCode = str_replace(['{{class}}'], [$target], $code);
+        $this->replaceGRPCFileMap[$class->getFileName()] = str_replace($m[0], $m[0].$newCode, $data);
+
+        $subClass = new \ReflectionClass($target);
+        $this->addArrayAbilityForMethod($subClass);
+    }
+
+    public function replaceGRPCFile()
+    {
+        foreach ($this->replaceGRPCFileMap as $file => $content) {
+            file_put_contents($file, $content);
+        }
     }
 }
