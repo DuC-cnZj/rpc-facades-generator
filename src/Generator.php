@@ -285,7 +285,13 @@ REGISTER;
         \$tmp = [];
         if (is_array(\$arr)) {
             foreach(\$arr as \$item) {
-                \$tmp[] = new {{class}}(\$item);
+                \$tmp[] = \$request = new {{class}}();
+                foreach (\$item as \$key => \$value) {
+                    \$method = 'set' . str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', \$key)));
+                    if (method_exists(\$request, \$method)) {
+                        \$request->\$method(\$value);
+                    }
+                }
             }
             \$arr = \$tmp;
         }\n

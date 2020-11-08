@@ -10,7 +10,8 @@
     ],
     "autoload": {
         "psr-4": {
-          "DucCnzj\\RpcFacadesGenerator\\": "src/"
+          "DucCnzj\\RpcFacadesGenerator\\": "src/",
+          "DucCnzj\\RpcFacadesGenerator\\Tests\\": "tests/"
         }
       },
     "require": {
@@ -22,5 +23,8 @@
     },
     "bin": [
         "bin/rpc-generator"
-    ]
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^9.4"
+    }
 }
