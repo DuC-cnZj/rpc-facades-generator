@@ -294,7 +294,7 @@ CODE;
         $newCode = str_replace(['{{class}}'], [$target], $code);
         $this->replaceGRPCFileMap[$class->getFileName()] = str_replace($m[0], $m[0].$newCode, $data);
 
-        $subClass = new \ReflectionClass($target);
+        $subClass = new \ReflectionClass(rtrim($target, '::class'));
         $this->addArrayAbilityForMethod($subClass);
     }
 
