@@ -60,6 +60,9 @@ class Generator
                             if (Str::startsWith($m->getName(), 'set')) {
                                 preg_match('/@param\s+(.*?)\s+/', $m->getDocComment(), $matches);
                                 $type = $matches[1];
+                                if (Str::contains($type, '\Google\Protobuf\Internal\RepeatedField')) {
+                                    $type = "array|".$type;
+                                }
                                 $name = Str::lower(Str::after($m->getName(), 'set'));
                                 $params .= "     *     @type {$type} \${$name}\n";
                             }
