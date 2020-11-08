@@ -280,7 +280,7 @@ REGISTER;
         if (count($m) < 2) {
             return;
         }
-        $target = trim(Arr::last(explode(',', $m[1])));
+        $target = trim(Arr::last(explode(',', rtrim($m[1], "::class"))));
         $code = <<<CODE
         \$tmp = \$arr;
         if (is_array(\$tmp)) {
@@ -294,7 +294,7 @@ CODE;
         $newCode = str_replace(['{{class}}'], [$target], $code);
         $this->replaceGRPCFileMap[$class->getFileName()] = str_replace($m[0], $m[0].$newCode, $data);
 
-        $subClass = new \ReflectionClass(rtrim($target, '::class'));
+        $subClass = new \ReflectionClass($target);
         $this->addArrayAbilityForMethod($subClass);
     }
 
