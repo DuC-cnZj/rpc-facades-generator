@@ -282,8 +282,8 @@ REGISTER;
         }
         $target = trim(Arr::last(explode(',', rtrim($m[1], "::class"))));
         $code = <<<CODE
-        \$tmp = \$arr;
-        if (is_array(\$tmp)) {
+        \$tmp = [];
+        if (is_array(\$arr)) {
             foreach(\$arr as \$item) {
                 \$tmp[] = new {{class}}(\$item);
             }
