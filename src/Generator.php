@@ -285,7 +285,7 @@ REGISTER;
         \$tmp = \$arr;
         if (is_array(\$tmp)) {
             foreach(\$arr as \$item) {
-                \$tmp = new {{class}}(\$item);
+                \$tmp[] = new {{class}}(\$item);
             }
             \$arr = \$tmp;
         }\n
