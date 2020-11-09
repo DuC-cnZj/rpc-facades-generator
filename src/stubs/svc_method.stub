@@ -33,4 +33,4 @@
         }
 
         throw new \Exception("{{svc}} rpc client error: " . $response->details, $response->code);
-    }\n\n
+    }
