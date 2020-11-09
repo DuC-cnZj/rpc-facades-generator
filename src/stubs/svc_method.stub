@@ -23,7 +23,7 @@
             }
         }
 
-        [$data, $response] = $this->client->{{method}}($request)->wait();
+        [$data, $response] = $this->client->{{method}}($request, $metadata, $options)->wait();
         if ($response->code == \Grpc\CALL_OK) {
             if ($asArray) {
                 return json_decode($data->serializeToJsonString(), true);
