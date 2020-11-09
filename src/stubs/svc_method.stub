@@ -1,36 +1,36 @@
     /**
-     * @param array|{{argument}} \$data {
+     * @param array|{{argument}} $data {
      *     Optional. Data for populating the Message object.
      *
 {{params}}
      * }
-     * @param bool \$asArray
+     * @param bool $asArray
      * @param array $metadata metadata
      * @param array $options call options
      *
      * @return {{return}}|array
      */
-    public function {{method}}(\$data = [], \$asArray = true, \$metadata = [], \$options = [])
+    public function {{method}}($data = [], $asArray = true, $metadata = [], $options = [])
     {
-        \$request = \$data;
-        if (is_array(\$data)) {
-            \$request = new {{argument}}();
-            foreach(\$data as \$key => \$value) {
-                \$method = 'set' . str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', \$key)));
-                if (method_exists(\$request, \$method)) {
-                    \$request->\$method(\$value);
+        $request = $data;
+        if (is_array($data)) {
+            $request = new {{argument}}();
+            foreach($data as $key => $value) {
+                $method = 'set' . str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $key)));
+                if (method_exists($request, $method)) {
+                    $request->$method($value);
                 }
             }
         }
 
-        [\$data, \$response] = \$this->client->{{method}}(\$request)->wait();
-        if (\$response->code == \Grpc\CALL_OK) {
-            if (\$asArray) {
-                return json_decode(\$data->serializeToJsonString(), true);
+        [$data, $response] = $this->client->{{method}}($request)->wait();
+        if ($response->code == \Grpc\CALL_OK) {
+            if ($asArray) {
+                return json_decode($data->serializeToJsonString(), true);
             }
 
-            return \$data;
+            return $data;
         }
 
-        throw new \Exception("{{svc}} rpc client error: " . \$response->details, \$response->code);
+        throw new \Exception("{{svc}} rpc client error: " . $response->details, $response->code);
     }\n\n

@@ -1,1 +1,1 @@
- * @method static {{return}}|array {{method}}(\$data = [], bool \$asArray = true)\n
+ * @method static {{return}}|array {{method}}($data = [], bool $asArray = true, $metadata = [], $options = [])\n
