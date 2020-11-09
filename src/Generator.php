@@ -98,9 +98,7 @@ class Generator
 
     public function replaceFacadeStub($class, $svcClass, $methods, $facadeNamespace)
     {
-        $m = <<<DOC
- * @method static {{return}}|array {{method}}(\$data = [], bool \$asArray = true)\n
-DOC;
+        $m = file_get_contents(__DIR__.'/stubs/facade_method_doc.stub');
         $doc = '';
         foreach ($methods as $method) {
             $doc .= str_replace(['{{method}}', '{{return}}'], [$method['method'], $method['return']], $m);
@@ -140,41 +138,7 @@ DOC;
     {
         foreach ($this->data as $data) {
             $topNs = explode('\\', $data['class'])[0];
-            $m = <<<Methods
-    /**
-     * @param array|{{argument}} \$data {
-     *     Optional. Data for populating the Message object.
-     *
-{{params}}
-     * }
-     * @param bool \$asArray
-     * @return {{return}}|array
-     */
-    public function {{method}}(\$data = [], \$asArray = true)
-    {
-        \$request = \$data;
-        if (is_array(\$data)) {
-            \$request = new {{argument}}();
-            foreach(\$data as \$key => \$value) {
-                \$method = 'set' . str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', \$key)));
-                if (method_exists(\$request, \$method)) {
-                    \$request->\$method(\$value);
-                }
-            }
-        }
-
-        [\$data, \$response] = \$this->client->{{method}}(\$request)->wait();
-        if (\$response->code == \Grpc\CALL_OK) {
-            if (\$asArray) {
-                return json_decode(\$data->serializeToJsonString(), true);
-            }
-
-            return \$data;
-        }
-
-        throw new \Exception("{{svc}} rpc client error: " . \$response->details, \$response->code);
-    }\n\n
-Methods;
+            $m = file_get_contents(__DIR__ . "/stubs/svc_method.stub");
 
             $methods = '';
             foreach ($data['methods'] as $method) {
@@ -205,17 +169,7 @@ Methods;
     {
         $namespace = Str::of(collect($this->data)->pluck('class')->first())->explode('\\')->first();
         $useClassList = collect($this->data)->pluck('class')->map(function ($class) {return "use $class;\n";})->implode('');
-        $registerDef = <<<REGISTER
-        \$this->app->singleton({{rpcClass}}::class);
-        \$this->app->when({{rpcClass}}::class)
-            ->needs('\$hostname')
-            ->give(env("{{rpcHost}}", ""));
-        \$this->app->when({{rpcClass}}::class)
-            ->needs('\$opts')
-            ->give([
-                'credentials' => \Grpc\ChannelCredentials::createInsecure(),
-            ]);
-REGISTER;
+        $registerDef = file_get_contents(__DIR__."/stubs/register.stub");
 
         $registers = collect($this->data)->map(function ($item) use ($registerDef) {
             $rpcClass = $item['shortClassName'];
@@ -291,21 +245,7 @@ REGISTER;
     public function deal($m, $class, $data)
     {
         $target = trim(Arr::last(explode(',', rtrim($m[1], "::class"))));
-        $code = <<<CODE
-        \$tmp = [];
-        if (is_array(\$arr)) {
-            foreach(\$arr as \$item) {
-                \$tmp[] = \$request = new {{class}}();
-                foreach (\$item as \$key => \$value) {
-                    \$method = 'set' . str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', \$key)));
-                    if (method_exists(\$request, \$method)) {
-                        \$request->\$method(\$value);
-                    }
-                }
-            }
-            \$arr = \$tmp;
-        }\n
-CODE;
+        $code = file_get_contents(__DIR__."/stubs/rpcmethodinject.stub");
 
         $newCode = str_replace(['{{class}}'], [$target], $code);
         if ($this->replaceGRPCFileMap[$class->getFileName()] ?? false) {
