@@ -71,7 +71,7 @@ class Generator
                         $this->addArrayAbilityForMethod($method->getParameters()[0]->getClass());
 
                         $methods[] = [
-                            'params'                 => trim($params),
+                            'params'                 => rtrim($params),
                             'method'                 => $method->getName(),
                             'return'                 => $match[1],
                             'argument'               => $method->getParameters()[0]->getClass()->getName(),
