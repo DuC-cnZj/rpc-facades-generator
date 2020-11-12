@@ -1,8 +1,6 @@
 <?php
 
-
 namespace DucCnzj\RpcFacadesGenerator\Replacers;
-
 
 interface ReplacerInterface
 {
