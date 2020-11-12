@@ -2,15 +2,14 @@
 
 namespace DucCnzj\RpcFacadesGenerator;
 
-use DucCnzj\RpcFacadesGenerator\Replacers\CheckMapFieldReplacer;
-use DucCnzj\RpcFacadesGenerator\Replacers\CheckMessageReplacer;
-use DucCnzj\RpcFacadesGenerator\Replacers\CheckRepeatedFieldReplacer;
-use DucCnzj\RpcFacadesGenerator\Replacers\ReplacerInterface;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Illuminate\Support\Collection;
 use Illuminate\Filesystem\FilesystemManager;
 use Illuminate\Contracts\Filesystem\Filesystem;
+use DucCnzj\RpcFacadesGenerator\Replacers\CheckMessageReplacer;
+use DucCnzj\RpcFacadesGenerator\Replacers\CheckMapFieldReplacer;
+use DucCnzj\RpcFacadesGenerator\Replacers\CheckRepeatedFieldReplacer;
 
 class Generator
 {
@@ -51,7 +50,6 @@ class Generator
 
     public function getGRPCData()
     {
-
         $this->fileManager->delete($this->fileManager->allFiles('Facades', 'Services'));
         $this->data = collect($this->fileManager->allFiles())
             ->filter(function ($name) {return Str::contains($name, 'Client');})
@@ -78,7 +76,7 @@ class Generator
                                 preg_match('/@param\s+(.*?)\s+/', $m->getDocComment(), $matches);
                                 $type = $matches[1];
                                 if (Str::contains($type, '\Google\Protobuf\Internal\RepeatedField')) {
-                                    $type = "array|".$type;
+                                    $type = 'array|' . $type;
                                 }
                                 $name = Str::lower(Str::after($m->getName(), 'set'));
                                 $params .= "     *     @type {$type} \${$name}\n";
@@ -111,21 +109,20 @@ class Generator
         $this->messageFiles = collect($this->fileManager->allFiles())
             ->reject(function ($name) {return Str::contains($name, ['Facades', 'Services']);})
             ->mapWithKeys(function ($name) {
-                $content = file_get_contents($path =$this->rootPath . '/' . $name);
-                if (!Str::contains($content, 'extends \Google\Protobuf\Internal\Message')) {
+                $content = file_get_contents($path = $this->rootPath . '/' . $name);
+                if (! Str::contains($content, 'extends \Google\Protobuf\Internal\Message')) {
                     return [];
                 }
 
                 return [$path => $content];
             })->filter();
 
-
         return $this;
     }
 
     public function replaceFacadeStub($class, $svcClass, $methods, $facadeNamespace)
     {
-        $m = file_get_contents(__DIR__.'/stubs/facade_method_doc.stub');
+        $m = file_get_contents(__DIR__ . '/stubs/facade_method_doc.stub');
         $doc = '';
         foreach ($methods as $method) {
             $doc .= str_replace(['{{method}}', '{{return}}'], [$method['method'], $method['return']], $m);
@@ -165,7 +162,7 @@ class Generator
     {
         foreach ($this->data as $data) {
             $topNs = explode('\\', $data['class'])[0];
-            $m = file_get_contents(__DIR__ . "/stubs/svc_method.stub");
+            $m = file_get_contents(__DIR__ . '/stubs/svc_method.stub');
 
             $methods = '';
             foreach ($data['methods'] as $method) {
@@ -196,7 +193,7 @@ class Generator
     {
         $namespace = Str::of(collect($this->data)->pluck('class')->first())->explode('\\')->first();
         $useClassList = collect($this->data)->pluck('class')->map(function ($class) {return "use $class;\n";})->implode('');
-        $registerDef = file_get_contents(__DIR__."/stubs/register.stub");
+        $registerDef = file_get_contents(__DIR__ . '/stubs/register.stub');
 
         $registers = collect($this->data)->map(function ($item) use ($registerDef) {
             $rpcClass = $item['shortClassName'];
