@@ -2,6 +2,10 @@
 
 namespace DucCnzj\RpcFacadesGenerator;
 
+use DucCnzj\RpcFacadesGenerator\Replacers\CheckMapFieldReplacer;
+use DucCnzj\RpcFacadesGenerator\Replacers\CheckMessageReplacer;
+use DucCnzj\RpcFacadesGenerator\Replacers\CheckRepeatedFieldReplacer;
+use DucCnzj\RpcFacadesGenerator\Replacers\ReplacerInterface;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -24,6 +28,12 @@ class Generator
      * @var Collection
      */
     private $messageFiles;
+
+    private $replacers = [
+        CheckMapFieldReplacer::class,
+        CheckMessageReplacer::class,
+        CheckRepeatedFieldReplacer::class,
+    ];
 
     /**
      * @var Filesystem
@@ -251,64 +261,16 @@ class Generator
     public function changeRpcFiles()
     {
         $this->messageFiles->each(function ($content, $path) {
-           $this->checkRepeatedField($path, $content);
-           $this->checkMessage($path, $content);
-           $this->checkMapField($path, $content);
-        });
-    }
-
-    public function checkRepeatedField($path, $content)
-    {
-        preg_match_all("/GPBUtil::checkRepeatedField\((.*?)\);\n/", $content, $matches);
-        foreach (collect($matches[0])->zip($matches[1])->toArray() as $m) {
-            $target = trim(Arr::last(explode(',', rtrim($m[1], "::class"))));
-            $code = file_get_contents(__DIR__."/stubs/checkRepeatedField.stub");
-
-            $newCode = str_replace(['{{class}}'], [$target], $code);
-            if ($this->replaceGRPCFileMap[$path] ?? false) {
-                $content = $this->replaceGRPCFileMap[$path];
+            foreach ($this->replacers as $replacer) {
+                (new $replacer)->replace($path, $content, $this->replaceGRPCFileMap);
             }
-            $this->replaceGRPCFileMap[$path] = str_replace($m[0], $m[0].$newCode, $content);
-        }
+        });
     }
 
     public function replaceGRPCFile()
     {
         foreach ($this->replaceGRPCFileMap as $file => $content) {
             file_put_contents($file, $content);
-        }
-    }
-
-    public function checkMapField($path, $content)
-    {
-        preg_match_all("/GPBUtil::checkMapField\((.*?)\);\n/", $content, $matches);
-        foreach (collect($matches[0])->zip($matches[1])->toArray() as $m) {
-            if (count($ex = explode(',', $m[1])) != 4) {
-                continue;
-            }
-            $target = trim(rtrim($ex[3], "::class"));
-            $code = file_get_contents(__DIR__."/stubs/checkMapField.stub");
-
-            $newCode = str_replace(['{{class}}'], [$target], $code);
-            if ($this->replaceGRPCFileMap[$path] ?? false) {
-                $content = $this->replaceGRPCFileMap[$path];
-            }
-            $this->replaceGRPCFileMap[$path] = str_replace($m[0], $m[0].$newCode, $content);
-        }
-    }
-
-    public function checkMessage($path, $content)
-    {
-        preg_match_all("/GPBUtil::checkMessage\((.*?)\);\n/", $content, $matches);
-        foreach (collect($matches[0])->zip($matches[1])->toArray() as $m) {
-            $target = trim(Arr::last(explode(',', rtrim($m[1], "::class"))));
-            $code = file_get_contents(__DIR__."/stubs/checkMessage.stub");
-
-            $newCode = str_replace(['{{class}}'], [$target], $code);
-            if ($this->replaceGRPCFileMap[$path] ?? false) {
-                $content = $this->replaceGRPCFileMap[$path];
-            }
-            $this->replaceGRPCFileMap[$path] = str_replace($m[0], $m[0].$newCode, $content);
         }
     }
 }
