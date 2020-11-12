@@ -1,0 +1,10 @@
+        if (is_array($var)) {
+            $tmp = new {{class}}();
+            foreach ($var as $key => $value) {
+                $method = 'set' . str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $key)));
+                if (method_exists($tmp, $method)) {
+                    $tmp->$method($value);
+                }
+            }
+            $var = $tmp;
+        }
