@@ -26,6 +26,7 @@
         if (isset($_SERVER['UBER-TRACE-ID'])) {
             $metadata['UBER-TRACE-ID'] = [$_SERVER['UBER-TRACE-ID']];
         }
+        $metadata["UID"] = [(string)auth()->id()];
         [$data, $response] = $this->client->{{method}}($request, $metadata, $options)->wait();
         if ($response->code == \Grpc\CALL_OK) {
             if ($asArray) {
