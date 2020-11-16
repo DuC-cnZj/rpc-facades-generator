@@ -48,6 +48,7 @@ syntax="proto3";
 // {package, php_metadata_namespace} required;
 package duc.dm;
 option go_package="duc/dm";
+// 一定要加 php_metadata_namespace
 option php_metadata_namespace = "Duc\\DM";
 
 message DM {

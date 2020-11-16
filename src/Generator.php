@@ -78,7 +78,7 @@ class Generator
                                 if (Str::contains($type, '\Google\Protobuf\Internal\RepeatedField')) {
                                     $type = 'array|' . $type;
                                 }
-                                $name = Str::lower(Str::after($m->getName(), 'set'));
+                                $name = Str::camel(Str::after($m->getName(), 'set'));
                                 $params .= "     *     @type {$type} \${$name}\n";
                             }
                         }
