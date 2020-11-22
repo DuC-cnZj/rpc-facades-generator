@@ -18,6 +18,8 @@ class Generator
      */
     private $rootPath;
 
+    private $nsPrefix;
+
     /**
      * @var array
      */
@@ -52,8 +54,12 @@ class Generator
     {
         $this->fileManager->delete($this->fileManager->allFiles('Facades', 'Services'));
         $this->data = collect($this->fileManager->allFiles())
-            ->filter(function ($name) {return Str::contains($name, 'Client');})
-            ->reject(function ($name) {return Str::contains($name, ['Facades', 'Services']);})
+            ->filter(function ($name) {
+                return Str::contains($name, 'Client');
+            })
+            ->reject(function ($name) {
+                return Str::contains($name, ['Facades', 'Services']);
+            })
             ->values()
             ->map(function ($name) {
                 $content = file_get_contents($this->rootPath . '/' . $name);
@@ -98,16 +104,18 @@ class Generator
                 $targetDir = implode(DIRECTORY_SEPARATOR, $arr);
 
                 return [
-                    'class'           => $class->getName(),
-                    'shortClassName'  => $class->getShortName(),
-                    'targetFile'      => $targetFile,
-                    'targetDir'       => $targetDir,
-                    'methods'         => $methods,
+                    'class'          => $class->getName(),
+                    'shortClassName' => $class->getShortName(),
+                    'targetFile'     => $targetFile,
+                    'targetDir'      => $targetDir,
+                    'methods'        => $methods,
                 ];
             })->values()->toArray();
 
         $this->messageFiles = collect($this->fileManager->allFiles())
-            ->reject(function ($name) {return Str::contains($name, ['Facades', 'Services']);})
+            ->reject(function ($name) {
+                return Str::contains($name, ['Facades', 'Services']);
+            })
             ->mapWithKeys(function ($name) {
                 $content = file_get_contents($path = $this->rootPath . '/' . $name);
                 if (! Str::contains($content, 'extends \Google\Protobuf\Internal\Message')) {
@@ -137,14 +145,15 @@ class Generator
     public function generateFacade(): void
     {
         foreach ($this->data as $data) {
-            $tmp = explode('\\', $data['class']);
+            $class = ltrim(ltrim($data['class'], $this->nsPrefix), '\\');
+            $tmp = explode('\\', $class);
             array_pop($tmp);
             $topNs = array_shift($tmp);
-            $facadeNamespace = implode('\\', array_merge([$topNs, 'Facades'], $tmp));
-            $svcNamespace = implode('\\', array_merge([$topNs, 'Services'], $tmp));
+            $facadeNamespace = $this->nsPrefix . '\\' . implode('\\', array_merge([$topNs, 'Facades'], $tmp));
+            $svcNamespace = $this->nsPrefix . '\\' . implode('\\', array_merge([$topNs, 'Services'], $tmp));
             $svcClass = '\\' . $svcNamespace . '\\' . $data['shortClassName'] . 'Service';
             $file = $this->replaceFacadeStub($data['shortClassName'], $svcClass, $data['methods'], $facadeNamespace);
-            $a = explode('\\', $data['class']);
+            $a = explode('\\', $class);
             array_pop($a);
             array_shift($a);
             if (! file_exists($path = $this->getFacadeDir(implode('/', $a)))) {
@@ -161,7 +170,9 @@ class Generator
     public function generateSvc(): void
     {
         foreach ($this->data as $data) {
-            $topNs = explode('\\', $data['class'])[0];
+            $class = ltrim(ltrim($data['class'], $this->nsPrefix), '\\');
+
+            $topNs = explode('\\', $class)[0];
             $m = file_get_contents(__DIR__ . '/stubs/svc_method.stub');
 
             $methods = '';
@@ -169,14 +180,16 @@ class Generator
                 $methods .= str_replace(['{{method}}', '{{argument}}', '{{return}}', '{{params}}', '{{svc}}'], [$method['method'], $method['argumentShortClassName'], $method['return'], $method['params'], $topNs], $m);
             }
 
-            $useClassList = collect($data['methods'])->pluck('argument')->unique()->merge($data['class'])->map(function ($class) {return "use $class;\n";})->implode('');
+            $useClassList = collect($data['methods'])->pluck('argument')->unique()->merge($data['class'])->map(function ($class) {
+                return "use $class;\n";
+            })->implode('');
 
-            $tmp = explode('\\', $data['class']);
+            $tmp = explode('\\', $class);
             array_pop($tmp);
             $topNs = array_shift($tmp);
-            $svcNamespace = implode('\\', array_merge([$topNs, 'Services'], $tmp));
+            $svcNamespace = $this->nsPrefix . '\\' . implode('\\', array_merge([$topNs, 'Services'], $tmp));
             $file = str_replace(['{{namespace}}', '{{useClassList}}', '{{class}}', '{{methods}}'], [$svcNamespace, $useClassList, $data['shortClassName'], rtrim($methods)], file_get_contents(__DIR__ . '/stubs/services.stub'));
-            $a = explode('\\', $data['class']);
+            $a = explode('\\', $class);
             array_pop($a);
             array_shift($a);
             if (! file_exists($path = $this->getSvcDir(implode('/', $a)))) {
@@ -191,8 +204,12 @@ class Generator
 
     public function generateProvider()
     {
-        $namespace = Str::of(collect($this->data)->pluck('class')->first())->explode('\\')->first();
-        $useClassList = collect($this->data)->pluck('class')->map(function ($class) {return "use $class;\n";})->implode('');
+        $class = ltrim(ltrim(collect($this->data)->pluck('class')->first(), $this->nsPrefix), '\\');
+
+        $namespace = $this->nsPrefix . '\\' . Str::of($class)->explode('\\')->first();
+        $useClassList = collect($this->data)->pluck('class')->map(function ($class) {
+            return "use $class;\n";
+        })->implode('');
         $registerDef = file_get_contents(__DIR__ . '/stubs/register.stub');
 
         $registers = collect($this->data)->map(function ($item) use ($registerDef) {
@@ -214,7 +231,11 @@ class Generator
         if (! file_exists($composerFile)) {
             throw new \Exception('path 下必须有 composer.json');
         }
-        preg_match('/(src.*)[^"]/', file_get_contents($composerFile), $match);
+        preg_match('/(src.*)[^"]/', $content = file_get_contents($composerFile), $match);
+        $ns = array_keys(json_decode($content, true)['autoload']['psr-4'])[0];
+        $nsArr = array_filter(explode('\\', $ns));
+        array_pop($nsArr);
+        $this->nsPrefix = implode('\\', $nsArr);
         $this->rootPath = $rootPath . DIRECTORY_SEPARATOR . rtrim($match[1], '\"');
         dump('root path: ' . $this->rootPath);
     }
