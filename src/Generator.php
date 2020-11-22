@@ -77,19 +77,57 @@ class Generator
                         $data = collect($fileArray)->slice($method->getStartLine(), $method->getEndLine() - $method->getStartLine())->implode('');
                         preg_match("/\['(.*?)', 'decode'\]/", $data, $match);
                         $params = '';
+                        $paramFields = [];
+                        $inline = false;
+                        $input = '$data';
+                        $paramFieldsStr = '$data = []';
+
                         foreach ($method->getParameters()[0]->getClass()->getMethods() as $m) {
                             if (Str::startsWith($m->getName(), 'set')) {
                                 preg_match('/@param\s+(.*?)\s+/', $m->getDocComment(), $matches);
+                                if (Str::contains($method->getDocComment(), 'php:inline')) {
+                                    $inline = true;
+                                }
                                 $type = $matches[1];
                                 if (Str::contains($type, '\Google\Protobuf\Internal\RepeatedField')) {
                                     $type = 'array|' . $type;
                                 }
                                 $name = Str::camel(Str::after($m->getName(), 'set'));
                                 $params .= "     *     @type {$type} \${$name}\n";
+                                $paramFields[$name] = $type;
+
+                                $paramFieldsArr = [];
+                                $inputArr = [];
+                                if ($inline) {
+                                    foreach ($paramFields as $field => $type) {
+                                        switch ($type) {
+                                            case Str::contains($type, 'array'):
+                                                $ft = '[]';
+                                                break;
+                                            case Str::contains($type, ['int', 'integer', 'string']):
+                                                $ft = "''";
+                                                break;
+                                            case Str::contains($type, ['float', 'double']):
+                                                $ft = '0.0';
+                                                break;
+                                            case Str::contains($type, ['boolean', 'bool']):
+                                                $ft = 'false';
+                                                break;
+                                        }
+                                        $paramFieldsArr[] = "\$$field = $ft";
+                                        $inputArr[] = "\"$field\" => \$$field";
+                                    }
+                                }
+                                $input = $inline ? '[' . implode(', ', $inputArr) . ']' : $input;
+                                $paramFieldsStr = $inline ? implode(', ', $paramFieldsArr) : '$data = []';
                             }
                         }
 
                         $methods[] = [
+                            'input'                  => $input,
+                            'paramFieldsStr'         => $paramFieldsStr,
+                            'inline'                 => $inline,
+                            'paramFields'            => $paramFields,
                             'params'                 => rtrim($params),
                             'method'                 => $method->getName(),
                             'return'                 => $match[1],
@@ -133,7 +171,7 @@ class Generator
         $m = file_get_contents(__DIR__ . '/stubs/facade_method_doc.stub');
         $doc = '';
         foreach ($methods as $method) {
-            $doc .= str_replace(['{{method}}', '{{return}}'], [$method['method'], $method['return']], $m);
+            $doc .= str_replace(['{{method}}', '{{return}}', '{{paramFieldStr}}'], [$method['method'], $method['return'], $method['paramFieldsStr']], $m);
         }
 
         return str_replace(['{{namespace}}', '{{class}}', '{{svcClass}}', '{{methods}}'], [$facadeNamespace, $class, $svcClass, rtrim($doc)], file_get_contents(__DIR__ . '/stubs/facade.stub'));
@@ -174,12 +212,14 @@ class Generator
 
             $topNs = explode('\\', $class)[0];
             $m = file_get_contents(__DIR__ . '/stubs/svc_method.stub');
-
             $methods = '';
             foreach ($data['methods'] as $method) {
-                $methods .= str_replace(['{{method}}', '{{argument}}', '{{return}}', '{{params}}', '{{svc}}'], [$method['method'], $method['argumentShortClassName'], $method['return'], $method['params'], $topNs], $m);
+                $params = str_replace('    @type', '@param', $method['params']);
+                if (! $method['inline']) {
+                    $params = str_replace(['{{params}}', '{{argument}}'], [$params, $method['argumentShortClassName']], file_get_contents(__DIR__ . '/stubs/sub_params.stub'));
+                }
+                $methods .= str_replace(['{{input}}', '{{paramFields}}', '{{method}}', '{{argument}}', '{{return}}', '{{params}}', '{{svc}}'], [$method['input'], $method['paramFieldsStr'], $method['method'], $method['argumentShortClassName'], $method['return'], $params, $topNs], $m);
             }
-
             $useClassList = collect($data['methods'])->pluck('argument')->unique()->merge($data['class'])->map(function ($class) {
                 return "use $class;\n";
             })->implode('');

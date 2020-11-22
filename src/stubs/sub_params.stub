@@ -1,0 +1,5 @@
+     * @param array|{{argument}} $data {
+     *     Optional. Data for populating the Message object.
+     *
+{{params}}
+     * }

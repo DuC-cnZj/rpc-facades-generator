@@ -2,6 +2,7 @@
 
 namespace DucCnzj\RpcFacadesGenerator\Tests;
 
+use DucCnzj\RpcFacadesGenerator\Generator;
 use PHPUnit\Framework\TestCase;
 
 class TestGenerator extends TestCase
