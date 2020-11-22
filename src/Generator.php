@@ -149,8 +149,8 @@ class Generator
             $tmp = explode('\\', $class);
             array_pop($tmp);
             $topNs = array_shift($tmp);
-            $facadeNamespace = $this->nsPrefix . '\\' . implode('\\', array_merge([$topNs, 'Facades'], $tmp));
-            $svcNamespace = $this->nsPrefix . '\\' . implode('\\', array_merge([$topNs, 'Services'], $tmp));
+            $facadeNamespace = trim($this->nsPrefix . '\\' . implode('\\', array_merge([$topNs, 'Facades'], $tmp)), '\\');
+            $svcNamespace = trim($this->nsPrefix . '\\' . implode('\\', array_merge([$topNs, 'Services'], $tmp)), '\\');
             $svcClass = '\\' . $svcNamespace . '\\' . $data['shortClassName'] . 'Service';
             $file = $this->replaceFacadeStub($data['shortClassName'], $svcClass, $data['methods'], $facadeNamespace);
             $a = explode('\\', $class);
@@ -187,7 +187,7 @@ class Generator
             $tmp = explode('\\', $class);
             array_pop($tmp);
             $topNs = array_shift($tmp);
-            $svcNamespace = $this->nsPrefix . '\\' . implode('\\', array_merge([$topNs, 'Services'], $tmp));
+            $svcNamespace = trim($this->nsPrefix . '\\' . implode('\\', array_merge([$topNs, 'Services'], $tmp)), '\\');
             $file = str_replace(['{{namespace}}', '{{useClassList}}', '{{class}}', '{{methods}}'], [$svcNamespace, $useClassList, $data['shortClassName'], rtrim($methods)], file_get_contents(__DIR__ . '/stubs/services.stub'));
             $a = explode('\\', $class);
             array_pop($a);
@@ -206,7 +206,7 @@ class Generator
     {
         $class = ltrim(ltrim(collect($this->data)->pluck('class')->first(), $this->nsPrefix), '\\');
 
-        $namespace = $this->nsPrefix . '\\' . Str::of($class)->explode('\\')->first();
+        $namespace = trim($this->nsPrefix . '\\' . Str::of($class)->explode('\\')->first(), '\\');
         $useClassList = collect($this->data)->pluck('class')->map(function ($class) {
             return "use $class;\n";
         })->implode('');
