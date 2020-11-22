@@ -110,6 +110,9 @@ class Generator
                                             case Str::contains($type, ['boolean', 'bool']):
                                                 $ft = 'false';
                                                 break;
+                                            case Str::contains($type, ['int', 'integer']):
+                                                $ft = "0";
+                                                break;
                                             default:
                                                 $ft = "''";
                                                 break;
