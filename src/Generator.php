@@ -113,6 +113,9 @@ class Generator
                                             case Str::contains($type, ['boolean', 'bool']):
                                                 $ft = 'false';
                                                 break;
+                                            default:
+                                                $ft = "''";
+                                                break;
                                         }
                                         $paramFieldsArr[] = "\$$field = $ft";
                                         $inputArr[] = "\"$field\" => \$$field";
