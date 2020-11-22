@@ -104,9 +104,6 @@ class Generator
                                             case Str::contains($type, 'array'):
                                                 $ft = '[]';
                                                 break;
-                                            case Str::contains($type, ['int', 'integer', 'string']):
-                                                $ft = "''";
-                                                break;
                                             case Str::contains($type, ['float', 'double']):
                                                 $ft = '0.0';
                                                 break;
