@@ -212,9 +212,9 @@ class Generator
         })->implode('');
         $registerDef = file_get_contents(__DIR__ . '/stubs/register.stub');
 
-        $registers = collect($this->data)->map(function ($item) use ($registerDef) {
+        $registers = collect($this->data)->map(function ($item) use ($class, $registerDef) {
             $rpcClass = $item['shortClassName'];
-            $rpcHost = Str::upper(Str::of($item['class'])->explode('\\')->first()) . '_HOST';
+            $rpcHost = Str::upper(Str::of($class)->explode('\\')->first()) . '_HOST';
 
             return str_replace(['{{rpcClass}}', '{{rpcHost}}'], [$rpcClass, $rpcHost], $registerDef);
         })->implode("\n");
