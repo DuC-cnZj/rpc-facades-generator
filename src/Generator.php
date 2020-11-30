@@ -43,10 +43,16 @@ class Generator
 
     public $replaceGRPCFileMap = [];
 
-    public function __construct(string $rootPath)
+    private $genFacades;
+
+    private $genProvider;
+
+    public function __construct(string $rootPath, $genFacades = true, $genProvider = true)
     {
         $this->rootPath = $rootPath;
         $this->validatePath($rootPath);
+        $this->genFacades = $genFacades;
+        $this->genProvider = $genProvider;
         $this->fileManager = (new FilesystemManager(null))->createLocalDriver(['root' => $this->rootPath]);
     }
 
@@ -111,7 +117,7 @@ class Generator
                                                 $ft = 'false';
                                                 break;
                                             case Str::contains($type, ['int', 'integer']):
-                                                $ft = "0";
+                                                $ft = '0';
                                                 break;
                                             default:
                                                 $ft = "''";
@@ -307,11 +313,15 @@ class Generator
 
     public function writeFile()
     {
-        $this->generateFacade();
         $this->generateSvc();
-        $this->generateProvider();
         $this->changeRpcFiles();
         $this->replaceGRPCFile();
+        if ($this->genFacades) {
+            $this->generateFacade();
+        }
+        if ($this->genProvider) {
+            $this->generateProvider();
+        }
     }
 
     public function toArray()

@@ -11,9 +11,9 @@ class {{class}}Service
      */
     protected $client;
 
-    public function __construct()
+    public function __construct({{class}} $client)
     {
-        $this->client = app({{class}}::class);
+        $this->client = $client;
     }
 
 {{methods}}

@@ -15,6 +15,15 @@ if (count($argv) <= 1) {
     throw new Exception("请输入composer.json 所在目录");
 }
 
-$g = new Generator($argv[1]);
+$genFacades = true;
+if (in_array('--no-facades', $argv)) {
+    $genFacades = false;
+}
+$genProvider = true;
+if (in_array('--no-provider', $argv)) {
+    $genProvider = false;
+}
+
+$g = new Generator($argv[1], $genFacades, $genProvider);
 $g->getGRPCData()->writeFile();
 echo "done!";

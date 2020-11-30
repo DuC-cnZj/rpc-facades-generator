@@ -13,6 +13,11 @@ $ composer require duc_cnzj/rpc-facades-generator --dev
 ./vendor/rpc-generator your-grpc-composer.json-dir
 ```
 
+### params
+
+1. `--no-provider `
+2. `--no-facade`
+
 ## `composer.json` demo
 ```json
 {
