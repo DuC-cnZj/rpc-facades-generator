@@ -1,1 +1,1 @@
- * @method static {{return}}|array {{method}}({{paramFieldStr}}, bool $asArray = true, $metadata = [], $options = [])
+ * @method static {{return}}|array {{method}}({{paramFieldStr}}, bool $toArray = false, $metadata = [], $options = [])

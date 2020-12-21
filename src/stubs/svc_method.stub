@@ -1,12 +1,12 @@
     /**
 {{params}}
-     * @param bool $asArray
+     * @param bool $toArray
      * @param array $metadata metadata
      * @param array $options call options
      *
      * @return {{return}}|array
      */
-    public function {{method}}({{paramFields}}, $asArray = true, $metadata = [], $options = [])
+    public function {{method}}({{paramFields}}, $toArray = false, $metadata = [], $options = [])
     {
         $input = {{input}};
         $request = $input;
@@ -26,7 +26,7 @@
         $metadata["UID"] = [(string)auth()->id()];
         [$data, $response] = $this->client->{{method}}($request, $metadata, $options)->wait();
         if ($response->code == \Grpc\CALL_OK) {
-            if ($asArray) {
+            if ($toArray) {
                 return json_decode($data->serializeToJsonString(), true);
             }
 
