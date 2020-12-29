@@ -109,18 +109,23 @@ class Generator
                                         switch ($type) {
                                             case Str::contains($type, 'array'):
                                                 $ft = '[]';
+
                                                 break;
                                             case Str::contains($type, ['float', 'double']):
                                                 $ft = '0.0';
+
                                                 break;
                                             case Str::contains($type, ['boolean', 'bool']):
                                                 $ft = 'false';
+
                                                 break;
                                             case Str::contains($type, ['int', 'integer']):
                                                 $ft = '0';
+
                                                 break;
                                             default:
                                                 $ft = "''";
+
                                                 break;
                                         }
                                         $paramFieldsArr[] = "\$$field = $ft";
@@ -256,16 +261,26 @@ class Generator
         $class = ltrim(ltrim(collect($this->data)->pluck('class')->first(), $this->nsPrefix), '\\');
 
         $namespace = trim($this->nsPrefix . '\\' . Str::of($class)->explode('\\')->first(), '\\');
-        $useClassList = collect($this->data)->pluck('class')->map(function ($class) {
-            return "use $class;\n";
+        $tmp = explode('\\', $class);
+        array_pop($tmp);
+        $topNs = array_shift($tmp);
+        $svcNamespace = trim($this->nsPrefix . '\\' . implode('\\', array_merge([$topNs, 'Services'], $tmp)), '\\');
+        $useClassList = collect($this->data)->map(function ($data) use ($svcNamespace) {
+            $class = $data['class'];
+            $shortClass = $data['shortClassName'];
+            $classUse = "use $class;\n";
+            $svcClassUse = "use $svcNamespace\\{$shortClass}Service;\n";
+
+            return $classUse . $svcClassUse;
         })->implode('');
         $registerDef = file_get_contents(__DIR__ . '/stubs/register.stub');
 
         $registers = collect($this->data)->map(function ($item) use ($class, $registerDef) {
             $rpcClass = $item['shortClassName'];
             $rpcHost = Str::upper(Str::of($class)->explode('\\')->first()) . '_HOST';
+            $svcClass = $item['shortClassName'] . 'Service';
 
-            return str_replace(['{{rpcClass}}', '{{rpcHost}}'], [$rpcClass, $rpcHost], $registerDef);
+            return str_replace(['{{rpcClass}}', '{{rpcHost}}', '{{svcClass}}'], [$rpcClass, $rpcHost, $svcClass], $registerDef);
         })->implode("\n");
 
         $file = str_replace(['{{namespace}}', '{{useClassList}}', '{{registers}}'], [$namespace, $useClassList, $registers], file_get_contents(__DIR__ . '/stubs/provider.stub'));
@@ -333,7 +348,7 @@ class Generator
     {
         $this->messageFiles->each(function ($content, $path) {
             foreach ($this->replacers as $replacer) {
-                (new $replacer)->replace($path, $content, $this->replaceGRPCFileMap);
+                (new $replacer())->replace($path, $content, $this->replaceGRPCFileMap);
             }
         });
     }

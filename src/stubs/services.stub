@@ -11,9 +11,12 @@ class {{class}}Service
      */
     protected $client;
 
-    public function __construct({{class}} $client)
+    protected $uidResolver;
+
+    public function __construct({{class}} $client, callable $uidResolver = null)
     {
         $this->client = $client;
+        $this->uidResolver = $uidResolver ?? function () {return "";};
     }
 
 {{methods}}

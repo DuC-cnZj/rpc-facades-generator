@@ -7,3 +7,8 @@
             ->give([
                 'credentials' => \Grpc\ChannelCredentials::createInsecure(),
             ]);
+        $this->app->when({{svcClass}}::class)
+            ->needs('$uidResolver')
+            ->give(function () {
+                return auth()->id();
+            });
