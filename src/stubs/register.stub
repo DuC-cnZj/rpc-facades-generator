@@ -10,5 +10,7 @@
         $this->app->when({{svcClass}}::class)
             ->needs('$uidResolver')
             ->give(function () {
-                return auth()->id();
+                return function () {
+                    return auth()->id();
+                };
             });
