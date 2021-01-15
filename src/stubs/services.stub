@@ -11,12 +11,15 @@ class {{class}}Service
      */
     protected $client;
 
-    protected $uidResolver;
+    /**
+     * @var \Closure[]
+     */
+    protected $middlewares;
 
-    public function __construct({{class}} $client, callable $uidResolver = null)
+    public function __construct({{class}} $client, array $middlewares = [])
     {
         $this->client = $client;
-        $this->uidResolver = $uidResolver ?? function () {return "";};
+        $this->middlewares = $middlewares;
     }
 
 {{methods}}

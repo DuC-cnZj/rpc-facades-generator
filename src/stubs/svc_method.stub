@@ -19,12 +19,19 @@
                 }
             }
         }
-        // TODO 不写死
-        if (isset($_SERVER['UBER-TRACE-ID'])) {
-            $metadata['UBER-TRACE-ID'] = [$_SERVER['UBER-TRACE-ID']];
-        }
-        $metadata["UID"] = [(string)call_user_func($this->uidResolver)];
-        [$data, $response] = $this->client->{{method}}($request, $metadata, $options)->wait();
+
+        $result = array_reduce(
+            array_reverse($this->middlewares),
+            function ($start, $handler) {
+                return function ($metadata) use ($start, $handler) {
+                    return $handler($metadata, $start);
+                };
+            }, function ($metadata) use ($request, $options) {
+               return $this->client->{{method}}($request, $metadata, $options)->wait();
+            }
+        );
+        [$data, $response] = $result($metadata);
+
         if ($response->code == \Grpc\CALL_OK) {
             if ($toArray) {
                 return json_decode($data->serializeToJsonString(), true);
