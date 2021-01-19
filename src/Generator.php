@@ -79,7 +79,16 @@ class Generator
                 $fileArray = explode("\n", file_get_contents($class->getFileName()));
 
                 foreach ($class->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-                    if (! $method->isConstructor() && $class->getName() == $method->class) {
+                    if (
+                        ! $method->isConstructor()
+                        && $class->getName() == $method->class
+                        && $method->getParameters()[0]->getClass()
+                        && !Str::contains($method->getDocComment(), [
+                            'ClientStreamingCall',
+                            'ServerStreamingCall',
+                            'BidiStreamingCall',
+                        ])
+                    ) {
                         $data = collect($fileArray)->slice($method->getStartLine(), $method->getEndLine() - $method->getStartLine())->implode('');
                         preg_match("/\['(.*?)', 'decode'\]/", $data, $match);
                         $params = '';
@@ -162,7 +171,10 @@ class Generator
                     'targetDir'      => $targetDir,
                     'methods'        => $methods,
                 ];
-            })->values()->toArray();
+            })
+            ->filter(function ($data) {return !empty($data['methods']);})
+            ->values()
+            ->toArray();
 
         $this->messageFiles = collect($this->fileManager->allFiles())
             ->reject(function ($name) {
